@@ -60,3 +60,13 @@ top_drugs.sort_values().plot(kind="barh")
 plt.title("Top 15 Drugs by Review Count")
 plt.xlabel("Number of Reviews")
 plt.savefig("top_drugs.png", bbox_inches="tight")
+
+# Which conditions have the most reviews?
+top_conditions = uci_drug_review["condition"].value_counts().head(15)
+print(top_conditions)
+ 
+plt.figure(figsize=(8, 6))
+top_conditions.sort_values().plot(kind="barh")
+plt.title("Top 15 Conditions by Review Count")
+plt.xlabel("Number of Reviews")
+plt.savefig("top_conditions.png", bbox_inches="tight")
