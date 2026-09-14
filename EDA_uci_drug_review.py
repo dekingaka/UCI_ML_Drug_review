@@ -70,3 +70,19 @@ top_conditions.sort_values().plot(kind="barh")
 plt.title("Top 15 Conditions by Review Count")
 plt.xlabel("Number of Reviews")
 plt.savefig("top_conditions.png", bbox_inches="tight")
+
+#  How long are the reviews?
+#  We create a NEW column that counts how many words are in each review
+uci_drug_review["review_word_count"] = uci_drug_review["review"].astype(str).str.split().apply(len)
+print(uci_drug_review["review_word_count"].describe())
+
+plt.figure(figsize=(8, 5))
+uci_drug_review["review_word_count"].plot(kind="hist", bins=50, edgecolor="black")
+plt.title("Distribution of Review Length (word count)")
+plt.xlabel("Number of Words in Review")
+plt.ylabel("Number of Reviews")
+plt.xlim(0, 300)  # zoom in - most reviews are shorter than 300 words
+plt.savefig("review_length.png", bbox_inches="tight")
+
+# Check the date range of the reviews
+print(f"\nDate range of reviews: {uci_drug_review['date'].min()} to {uci_drug_review['date'].max()}")
