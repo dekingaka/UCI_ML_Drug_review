@@ -33,3 +33,19 @@ print("\nMissing values as a percentage of total rows:" + str(missing_pct.round(
 # We sort by count so we see the most common values first.
 print("\nTop 10 most common values in 'condition' column:")
 print(uci_drug_review["condition"].value_counts().head(10))
+
+# Let's specifically look for suspicious entries containing "</span>"
+# which is a leftover HTML tag - a sign of messy/dirty data.
+suspicious = uci_drug_review[uci_drug_review["condition"].astype(str).str.contains("</span>", na=False)]
+print(f"\nNumber of rows with HTML leftovers in 'condition': {len(suspicious)}")
+
+# Explore the 'rating' column and describe the summary statistics
+print("\nSummary statistics for 'rating' column:" + str(uci_drug_review["rating"].describe()))
+
+#plot a histogram of the 'rating' column to visualize its distribution
+plt.figure(figsize=(8, 5))
+uci_drug_review["rating"].plot(kind="hist", bins=10, edgecolor="black")
+plt.title("Distribution of Patient Ratings (1-10)")
+plt.xlabel("Rating")
+plt.ylabel("Number of Reviews")
+plt.savefig("rating_distribution.png", bbox_inches="tight")
