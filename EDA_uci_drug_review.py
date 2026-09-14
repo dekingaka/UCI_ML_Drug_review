@@ -16,3 +16,20 @@ uci_drug_review = pd.read_csv("drugsComTrain_raw.csv")
 uci_drug_review.shape
 
 
+#Check data types
+print(uci_drug_review.dtypes)
+
+#Check for missing data
+missing_counts = uci_drug_review.isna().sum()
+print(missing_counts)
+
+
+# Let's also see this as a percentage - easier to judge how serious it is
+missing_pct = (missing_counts / len(uci_drug_review)) * 100
+print("\nMissing values as a percentage of total rows:" + str(missing_pct.round(2)))
+
+# Look at the 'condition' column for junk/dirty values
+# .value_counts() counts how many times each unique value appears.
+# We sort by count so we see the most common values first.
+print("\nTop 10 most common values in 'condition' column:")
+print(uci_drug_review["condition"].value_counts().head(10))
