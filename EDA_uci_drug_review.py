@@ -49,3 +49,14 @@ plt.title("Distribution of Patient Ratings (1-10)")
 plt.xlabel("Rating")
 plt.ylabel("Number of Reviews")
 plt.savefig("rating_distribution.png", bbox_inches="tight")
+
+# Which drugs have the most reviews?
+top_drugs = uci_drug_review["drugName"].value_counts().head(15)
+print(top_drugs)
+
+#plot a bae chart to see the drugs with the most reviews
+plt.figure(figsize=(8, 6))
+top_drugs.sort_values().plot(kind="barh")
+plt.title("Top 15 Drugs by Review Count")
+plt.xlabel("Number of Reviews")
+plt.savefig("top_drugs.png", bbox_inches="tight")
