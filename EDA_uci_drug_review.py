@@ -86,3 +86,6 @@ plt.savefig("review_length.png", bbox_inches="tight")
 
 # Check the date range of the reviews
 print(f"\nDate range of reviews: {uci_drug_review['date'].min()} to {uci_drug_review['date'].max()}")
+
+# Save a cleaned-up summary as CSV
+uci_drug_review.to_csv("drugs_with_eda_columns.csv", index=False)
