@@ -110,3 +110,21 @@ uci_drug_review_clean["condition"] = uci_drug_review_clean["condition"].str.stri
 
 # Let's double check how many unique conditions we have now.
 print(f"\nNumber of unique conditions after cleaning: {uci_drug_review_clean['condition'].nunique()}")
+
+# Filter down to our focus drug class - Birth Control
+birth_control_uci_drug_review = uci_drug_review_clean[uci_drug_review_clean["condition"] == "Birth Control"].copy()
+print(f"\nNumber of Birth Control reviews: {len(birth_control_uci_drug_review)}")
+
+
+# Sanity-check our filtered data
+top_birth_control_drugs = birth_control_uci_drug_review["drugName"].value_counts().head(15)
+print("\nTop 15 drugs within Birth Control reviews:")
+print(top_birth_control_drugs)
+ 
+# Quick check of the rating distribution just for this subset
+print("\nRating summary for Birth Control reviews:")
+print(birth_control_uci_drug_review["rating"].describe())
+
+# save the filtered birth control reviews to a new CSV file for further analysis
+birth_control_uci_drug_review.to_csv("birth_control_reviews_clean.csv", index=False)
+print("\nSaved: birth_control_reviews_clean.csv")
