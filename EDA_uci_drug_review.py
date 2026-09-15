@@ -98,3 +98,15 @@ print(f"\nFound {is_junk.sum()} rows with broken 'condition' values.")
 # is_junk is False (i.e. the condition value is clean).
 uci_drug_review_clean = uci_drug_review[~is_junk].copy()
 print(f"Rows remaining after removing junk: {len(uci_drug_review_clean)}")
+
+# Remove rows where 'condition' is missing entirely
+
+uci_drug_review_clean = uci_drug_review_clean.dropna(subset=["condition"])
+ 
+print(f"Rows remaining after dropping missing conditions: {len(uci_drug_review_clean)}")
+
+# Standardise text formatting
+uci_drug_review_clean["condition"] = uci_drug_review_clean["condition"].str.strip()
+
+# Let's double check how many unique conditions we have now.
+print(f"\nNumber of unique conditions after cleaning: {uci_drug_review_clean['condition'].nunique()}")
