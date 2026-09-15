@@ -87,5 +87,14 @@ plt.savefig("review_length.png", bbox_inches="tight")
 # Check the date range of the reviews
 print(f"\nDate range of reviews: {uci_drug_review['date'].min()} to {uci_drug_review['date'].max()}")
 
-# Save a cleaned-up summary as CSV
-uci_drug_review.to_csv("drugs_with_eda_columns.csv", index=False)
+# Find and remove the "junk" condition rows
+# text like "</span>". This happens when the data was scraped from
+# a website and a bit of formatting code got captured by mistake.
+is_junk = uci_drug_review["condition"].astype(str).str.contains("</span>", na=False)
+
+print(f"\nFound {is_junk.sum()} rows with broken 'condition' values.")
+
+# this keeps only the rows where
+# is_junk is False (i.e. the condition value is clean).
+uci_drug_review_clean = uci_drug_review[~is_junk].copy()
+print(f"Rows remaining after removing junk: {len(uci_drug_review_clean)}")
