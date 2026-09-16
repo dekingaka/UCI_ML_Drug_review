@@ -102,3 +102,72 @@ for drug in top_drugs:
     # individually or hand them to a colleague/supervisor.
     safe_name = drug.replace(" ", "_").replace("/", "-")
     top_effects.to_csv(f"side_effects_{safe_name}.csv", index=False)
+
+import matplotlib.pyplot as plt
+
+# Load the three saved results files from Step 3
+
+files = {
+    "Etonogestrel": "side_effects_Etonogestrel.csv",
+    "Ethinyl estradiol / norethindrone": "side_effects_Ethinyl_estradiol_-_norethindrone.csv",
+    "Nexplanon": "side_effects_Nexplanon.csv",
+}
+ 
+results = {}
+for drug_name, file_path in files.items():
+    results[drug_name] = pd.read_csv(file_path)
+
+#Plot each drug's own top 10 symptoms
+for drug_name, df in results.items():
+    plt.figure(figsize=(8, 6))
+ 
+    # We sort ascending before plotting so the biggest bar ends up
+    # at the TOP of a horizontal bar chart (matplotlib draws from
+    # bottom to top by default).
+    df_sorted = df.sort_values("pct_of_reviews", ascending=True)
+ 
+    plt.barh(df_sorted["term"], df_sorted["pct_of_reviews"], color="#4C72B0")
+    plt.title(f"Top Extracted Symptoms - {drug_name}")
+    plt.xlabel("% of Reviews Mentioning This Term")
+ 
+    # Clean up the filename so it doesn't contain spaces or slashes,
+    # which can cause problems when saving files.
+    safe_name = drug_name.replace(" ", "_").replace("/", "-")
+    plt.savefig(f"symptoms_{safe_name}.png", bbox_inches="tight")
+
+#Build one combined comparison chart across all 3 drugs
+top_terms_per_drug = [set(df["term"].head(10)) for df in results.values()]
+combined_terms = set()
+for term_set in top_terms_per_drug:
+    combined_terms.update(term_set)
+ 
+print(f"\nComparing {len(combined_terms)} unique symptoms across all 3 drugs.")
+ 
+# Now build one table with a row per symptom and one column per drug,
+# showing the % of reviews mentioning it (0 if it wasn't in that
+# drug's extracted list at all).
+comparison_rows = []
+for term in sorted(combined_terms):
+    row = {"term": term}
+    for drug_name, df in results.items():
+        match = df[df["term"] == term]
+        row[drug_name] = match["pct_of_reviews"].values[0] if len(match) > 0 else 0
+    comparison_rows.append(row)
+ 
+comparison_df = pd.DataFrame(comparison_rows).set_index("term")
+ 
+# Sort by the average % across the three drugs, so the most
+# consistently-mentioned symptoms appear at the top of the chart.
+comparison_df["avg"] = comparison_df.mean(axis=1)
+comparison_df = comparison_df.sort_values("avg", ascending=True).drop(columns="avg")
+ 
+print("\nComparison table (% of reviews mentioning each symptom):")
+print(comparison_df)
+
+ # Plot the grouped comparison chart
+comparison_df.plot(kind="barh", figsize=(10, 8), width=0.75)
+plt.title("Extracted Symptom Mentions Across the Top 3 Birth Control Drugs")
+plt.xlabel("% of Reviews Mentioning This Term")
+plt.ylabel("")
+plt.legend(title="Drug", bbox_to_anchor=(1.02, 1), loc="upper left")
+plt.savefig("symptoms_comparison_all_drugs.png", bbox_inches="tight")
