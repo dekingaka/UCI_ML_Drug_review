@@ -85,3 +85,20 @@ def extract_side_effects_for_drug(birth_control_uci_drug_review, drug_name, text
     result["pct_of_reviews"] = (result["mention_count"] / len(subset) * 100).round(2)
  
     return result
+
+# Run it for our top 3 Birth Control drugs (by review volume)
+top_drugs = ["Etonogestrel", "Ethinyl estradiol / norethindrone", "Nexplanon"]
+ 
+all_results = {}
+ 
+for drug in top_drugs:
+    top_effects = extract_side_effects_for_drug(birth_control_uci_drug_review, drug_name=drug)
+    all_results[drug] = top_effects
+ 
+    print(f"\nTop 10 extracted side-effect mentions for {drug}:")
+    print(top_effects.head(10))
+ 
+    # Save each drug's results to its own CSV so you can inspect them
+    # individually or hand them to a colleague/supervisor.
+    safe_name = drug.replace(" ", "_").replace("/", "-")
+    top_effects.to_csv(f"side_effects_{safe_name}.csv", index=False)
