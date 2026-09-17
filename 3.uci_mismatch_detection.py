@@ -20,6 +20,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
+from sklearn.linear_model import Ridge
 
 # Load our cleaned, filtered dataset
 birth_control_uci_drug_review = pd.read_csv("birth_control_reviews_clean.csv")
@@ -64,3 +65,86 @@ print(f"\nLoaded {len(test_birth_control_uci_drug_review)} Birth Control reviews
  
 X_test = test_birth_control_uci_drug_review["review"]
 y_test = test_birth_control_uci_drug_review["rating"]
+
+# Turn text into numbers the model can understand
+"""  
+   TF-IDF (Term Frequency - Inverse Document Frequency) converts each
+   review into a row of numbers, where each number represents how
+   a particular word (or pair of words) is to that specific
+   review, compared to how common it is across ALL reviews.
+"""
+
+# max_features=5000: only keep the 5000 most useful words/phrases.
+# ngram_range=(1, 2): consider both single words and two-word phrases.
+# stop_words="english": ignore common filler words like "the", "is".
+vectorizer = TfidfVectorizer(max_features=5000, ngram_range=(1, 2), stop_words="english")
+ 
+# .fit_transform() learns the vocabulary from the TRAINING data only,
+# then converts it into numbers.
+X_train_vec = vectorizer.fit_transform(X_train)
+ 
+# .transform() (no "fit") applies that SAME vocabulary to the test
+# data. We never fit on the test set - that would let the model peek
+# at test-set vocabulary, making our evaluation unrealistic.
+X_test_vec = vectorizer.transform(X_test)
+
+
+
+#Train the model
+"""
+   Ridge is a simple, well-understood regression model - it predicts
+   a number (here, the rating) based on the input features (here, the
+   TF-IDF word scores).
+"""
+model = Ridge(alpha=1.0)
+model.fit(X_train_vec, y_train)
+print("\nModel trained.")
+ 
+ 
+# ---------------------------------------------------------------
+# Check how good the model is, using the genuine held-out test set
+# ---------------------------------------------------------------
+predictions = model.predict(X_test_vec)
+ 
+# Mean Absolute Error (MAE) tells us, on average, how far off the
+# model's guesses were from the real rating.
+mae = mean_absolute_error(y_test, predictions)
+print(f"Test MAE (average error in predicted rating): {mae:.3f}")
+
+
+# Score EVERY training review for mismatch
+"""
+   Now that we trust the model reasonably works (checked against the
+   proper test set above), we run it across the TRAINING reviews to
+   find mismatched reviews worth reading and learning from.
+"""
+
+X_train_predictions = model.predict(X_train_vec)
+ 
+birth_control_uci_drug_review["predicted_rating"] = X_train_predictions
+ 
+
+birth_control_uci_drug_review["mismatch_score"] = (
+    birth_control_uci_drug_review["rating"] - birth_control_uci_drug_review["predicted_rating"]
+)
+ 
+# Sort so the BIGGEST mismatches (in either direction) appear first.
+birth_control_sorted = birth_control_uci_drug_review.sort_values("mismatch_score", key=abs, ascending=False)
+ 
+ 
+# Look at the most mismatched reviews
+print("\nTop 10 most mismatched reviews:")
+top_mismatches = birth_control_sorted[
+    ["drugName", "rating", "predicted_rating", "mismatch_score", "review"]
+].head(10)
+
+for _, row in top_mismatches.iterrows():
+    print(f"\nDrug: {row['drugName']}")
+    print(f"Actual rating: {row['rating']} ")
+    print(f"Model's predicted rating: {row['predicted_rating']:.1f}")
+    print(f"Mismatch score: {row['mismatch_score']:.1f}")
+    print(f"Review: {row['review'][:200]}...")
+
+
+# Save the results
+birth_control_sorted.to_csv("uci_birth_control_mismatch_scores.csv", index=False)
