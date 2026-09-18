@@ -17,6 +17,8 @@ How this works, in plain terms:
 """
 
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
@@ -127,7 +129,11 @@ birth_control_uci_drug_review["predicted_rating"] = X_train_predictions
 birth_control_uci_drug_review["mismatch_score"] = (
     birth_control_uci_drug_review["rating"] - birth_control_uci_drug_review["predicted_rating"]
 )
- 
+
+birth_control_uci_drug_review["predicted_rating"] = np.clip(
+    birth_control_uci_drug_review["predicted_rating"], 1, 10
+)
+
 # Sort so the BIGGEST mismatches (in either direction) appear first.
 birth_control_sorted = birth_control_uci_drug_review.sort_values("mismatch_score", key=abs, ascending=False)
  
@@ -148,3 +154,63 @@ for _, row in top_mismatches.iterrows():
 
 # Save the results
 birth_control_sorted.to_csv("uci_birth_control_mismatch_scores.csv", index=False)
+
+uci_birth_control_mismatch_scores = pd.read_csv("uci_birth_control_mismatch_scores.csv")
+print(f"Loaded {len(uci_birth_control_mismatch_scores)} scored reviews.")
+
+# Actual rating vs. Predicted rating (scatter plot)
+plt.figure(figsize=(7, 7))
+ 
+plt.scatter(uci_birth_control_mismatch_scores["rating"], uci_birth_control_mismatch_scores["predicted_rating"], alpha=0.15, s=15, color="#4C72B0")
+ 
+plt.plot([1, 10], [1, 10], color="red", linestyle="--", linewidth=1.5)
+ 
+plt.xlabel("Actual Rating (given by patient)")
+plt.ylabel("Predicted Rating (guessed from text alone)")
+plt.title("Actual vs. Predicted Rating - Birth Control Reviews")
+plt.savefig("actual_vs_predicted_rating.png", bbox_inches="tight")
+
+
+# Distribution of mismatch scores (histogram)
+
+"""
+   This shows how COMMON large mismatches are. Most reviews should
+   cluster close to 0 (the model's guess was roughly right). The
+   tails on either side - far from 0 - are the interesting minority
+   of reviews where text and rating strongly disagree.
+   """
+plt.figure(figsize=(8, 5))
+plt.hist(uci_birth_control_mismatch_scores["mismatch_score"], bins=40, color="#55A868", edgecolor="black")
+plt.xlabel("Mismatch Score (Actual Rating - Predicted Rating)")
+plt.ylabel("Number of Reviews")
+plt.title("Distribution of Rating/Text Mismatch Scores")
+plt.savefig("mismatch_score_distribution.png", bbox_inches="tight")
+
+
+#The single most mismatched review per drug (bar chart)
+"""
+This picks out the biggest single mismatch for each of the top
+drugs, so we can show a concrete, named example rather than just
+an abstract score
+"""
+top_drugs = ["Etonogestrel", "Ethinyl estradiol / norethindrone", "Nexplanon"]
+ 
+# For each drug, find the row with the single largest mismatch
+# (biggest absolute value of mismatch_score).
+biggest_per_drug = []
+for drug in top_drugs:
+    subset = uci_birth_control_mismatch_scores[uci_birth_control_mismatch_scores["drugName"] == drug]
+    if len(subset) == 0:
+        continue
+    biggest_row = subset.loc[subset["mismatch_score"].abs().idxmax()]
+    biggest_per_drug.append(biggest_row)
+ 
+biggest_df = pd.DataFrame(biggest_per_drug)
+ 
+plt.figure(figsize=(8, 5))
+colors = ["#C44E52" if val < 0 else "#4C72B0" for val in biggest_df["mismatch_score"]]
+plt.barh(biggest_df["drugName"], biggest_df["mismatch_score"], color=colors)
+plt.axvline(0, color="black", linewidth=0.8)
+plt.xlabel("Mismatch Score (Actual Rating - Predicted Rating)")
+plt.title("Biggest Single Rating/Text Mismatch per Drug")
+plt.savefig("biggest_mismatch_per_drug.png", bbox_inches="tight")
