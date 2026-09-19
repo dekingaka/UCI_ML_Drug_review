@@ -1,0 +1,11 @@
+symptom,review_count_mentioning,pct_of_all_reviews,avg_mismatch_when_mentioned,avg_mismatch_when_not_mentioned,avg_mismatch_size_when_mentioned,avg_mismatch_size_when_not_mentioned,mismatch_size_difference
+bleeding,5585,19.4,-0.01,0.0,1.48,1.41,0.07000000000000006
+headaches,2605,9.05,-0.02,0.0,1.46,1.42,0.040000000000000036
+anxiety,1856,6.45,-0.04,0.0,1.44,1.43,0.010000000000000009
+depressed,1841,6.4,-0.02,0.0,1.43,1.43,0.0
+depression,2252,7.82,-0.03,0.0,1.42,1.43,-0.010000000000000009
+nausea,2389,8.3,0.03,-0.0,1.4,1.43,-0.030000000000000027
+pain,6820,23.69,-0.0,0.0,1.39,1.44,-0.050000000000000044
+acne,5976,20.76,-0.01,0.0,1.37,1.44,-0.06999999999999984
+weight gain,4539,15.77,0.04,-0.01,1.37,1.44,-0.06999999999999984
+cramps,5913,20.54,-0.01,0.0,1.37,1.44,-0.06999999999999984
